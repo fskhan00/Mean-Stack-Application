@@ -1,24 +1,20 @@
 var express = require('express');
 var app     = express();
 var path    = require('path');
+var routes  = require('./api/routes');
+
 
 app.set('port',3000);
 
+app.use(function(req, res, next){
+  console.log(req.method, req.url);
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/json',(req, res)=> {
-  res
-    .status(200)
-    .json({'Admitted': true});
+app.use('/api',routes);
 
-});
-
-app.get('/file',(req, res)=> {
-  res
-    .status(200)
-    .sendFile(path.join(__dirname, 'app.js'));
-
-});
 var server = app.listen(app.get('port'), () => {
   var port = server.address().port;
   console.log('Express is listening at ' + port);
