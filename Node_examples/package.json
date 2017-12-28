@@ -13,8 +13,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "angular": "^1.6.8",
+    "angular-route": "^1.6.8",
+    "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.2",
+    "bootstrap": "^3.3.7",
     "express": "^4.16.2",
+    "jsonwebtoken": "^8.1.0",
     "mongodb": "^3.0.0-rc0",
     "mongoose": "^4.13.7"
   },
