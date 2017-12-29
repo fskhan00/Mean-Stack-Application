@@ -3,63 +3,62 @@ var User = mongoose.model('User');
 var bcrypt = require('bcrypt-nodejs');
 var jwt = require('jsonwebtoken');
 
-module.exports.register= function (req,res){
-  console.log('Registering the User');
-  var name     = req.body.name || null;
+module.exports.register = function(req, res) {
+  console.log('registering user');
+
   var username = req.body.username;
+  var name = req.body.name || null;  // If no name given, set as null.
   var password = req.body.password;
 
   User.create({
     username: username,
     name: name,
-    password: bcrypt.hashSync(password,bcrypt.genSaltSync(10))
-  },function(err, user) {
-    if(err) {
-      console.log('Registering failed');
-      res
-      .status(400).json(err);
+    password: bcrypt.hashSync(password, bcrypt.genSaltSync(10))
+  }, function(err, user) {
+    if (err) {
+      console.log(err);
+      res.status(400).json(err);
     } else {
-      console.log('User registered');
+      console.log('user created', user);
       res.status(201).json(user);
     }
   });
-
 };
 
-module.exports.login = function (req,res){
-  console.log('logging in the user');
+module.exports.login = function(req, res) {
+  console.log('logging in user');
   var username = req.body.username;
   var password = req.body.password;
+
   User.findOne({
     username: username
   }).exec(function(err, user) {
-    if(err) {
-      console.log('login  failed');
-      res
-      .status(400).json(err);
+    if (err) {
+      console.log(err);
+      res.status(400).json(err);
     } else {
       if (bcrypt.compareSync(password, user.password)) {
-        console.log('User logged in');
-        var token = jwt.sign({username: user.username}, 's3cr3t', {expiresIn: 3600});
-        res.status(201).json({success: true, token: token});
+        console.log('User found', user);
+        var token = jwt.sign({ username: user.username },
+          's3cr3t',  // Must be changed if in production environment.
+          { expiresIn: 3600 });
+        res.status(200).json({ success: true, token: token});
       } else {
-        res.status(401).json('Unauthorised');
+        res.status(401).json('Unauthorized');
       }
-
     }
   });
+
 };
 
 module.exports.authenticate = function(req, res, next) {
   var headerExists = req.headers.authorization;
   if (headerExists) {
-    var token = req.headers.authorization.split(' ')[1];
-    jwt.verify(token,'s3cr3t',function(error,decoded) {
-      if(error) {
-        console.log('Unauthorized');
-        res
-        .status(400).json(error);
-
+    var token = req.headers.authorization.split(' ')[1]; //--> Format of header is "Authorization Bearer xxx"
+    jwt.verify(token, 's3cr3t', function(error, decoded) {
+      if (error) {
+        console.log(error);
+        res.status(401).json('Unauthorized');
       } else {
         req.user = decoded.username;
         next();
